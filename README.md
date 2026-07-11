@@ -63,14 +63,14 @@ ride-hailing-fee-prediction/
 └── images/              # exported charts/maps referenced in this README
 ```
 
-## 
-
-## Interactive dashboard
-[View the live dashboard](https://cabluemgeek.github.io/ride-hailing-fee-prediction/ride_hailing_dashboard.html)
+## Key insights
 
 - A frequent, high-spending rider segment has a disproportionately high cancellation rate — a targeted retention opportunity rather than a pure "grow demand" problem.
 - Trip failure (not fee amount) is the biggest lever on revenue: a large share of requests never reach `FINISHED`.
 - Weather condition, time of day, and same-city vs. cross-city routing all carry real signal for fee prediction once combined with distance features.
+
+## Interactive dashboard
+[![View Dashboard](https://img.shields.io/badge/View-Live%20Dashboard-blue)](https://cabluemgeek.github.io/ride-hailing-fee-prediction/ride_hailing_dashboard.html)
 
 ## Possible next steps
 
