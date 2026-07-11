@@ -28,7 +28,7 @@ Missing values are concentrated in trips that were never accepted, started, or c
 - *Customer segmentation* (K-Means on frequency, completion rate, cancellation rate, distance, spend) → 4 rider profiles. The key finding: the highest-spending, highest-frequency segment also has the worst completion rate — a retention risk sitting on top of the platform's best revenue.
 - *Driver-level KPIs*
 - *Interactive geographic analysis* (Folium) mapping demand, cancellation, and revenue flows between pickup/destination cities to surface high-demand routes and problem areas.
-- 
+
 [![View pickup/flow map](https://img.shields.io/badge/View-Pickup%2FFlow%20Map-blue)](https://cabluemgeek.github.io/ride-hailing-fee-prediction/ride_hailing_map.html)
 
 **3. Feature engineering**
