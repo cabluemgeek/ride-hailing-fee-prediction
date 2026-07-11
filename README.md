@@ -24,8 +24,7 @@ Missing values are concentrated in trips that were never accepted, started, or c
 
 [![View Dashboard](https://img.shields.io/badge/View-Live%20Dashboard-blue)](https://cabluemgeek.github.io/ride-hailing-fee-prediction/ride_hailing_dashboard.html)
 
-[![View Pickup/flow map](https://img.shields.io/badge/View-Live%20Dashboard-blue)]([https://cabluemgeek.github.io/ride-hailing-fee-prediction/ride_hailing_dashboard.html](https://cabluemgeek.github.io/ride-hailing-fee-prediction/ride_hailing_map.html))
-
+[![View Pickup/flow map](https://img.shields.io/badge/View-Live%20Dashboard-blue)](https://cabluemgeek.github.io/ride-hailing-fee-prediction/ride_hailing_map.html)
 
 **2. Exploratory data analysis**
 - *Customer segmentation* (K-Means on frequency, completion rate, cancellation rate, distance, spend) → 4 rider profiles. The key finding: the highest-spending, highest-frequency segment also has the worst completion rate — a retention risk sitting on top of the platform's best revenue.
