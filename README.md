@@ -22,7 +22,7 @@ Missing values are concentrated in trips that were never accepted, started, or c
 
 **1. Descriptive statistics** — finished vs. unfinished trip rates broken down by month, time of day, and city, to understand where and when demand is lost.
 
----> ***Interactive dashboard***
+ ***Interactive dashboard***
 [![View Dashboard](https://img.shields.io/badge/View-Live%20Dashboard-blue)](https://cabluemgeek.github.io/ride-hailing-fee-prediction/ride_hailing_dashboard.html)
 
 **2. Exploratory data analysis**
