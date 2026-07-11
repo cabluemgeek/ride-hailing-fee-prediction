@@ -63,7 +63,10 @@ ride-hailing-fee-prediction/
 └── images/              # exported charts/maps referenced in this README
 ```
 
-## Key insights
+## 
+
+## Interactive dashboard
+[View the live dashboard](https://cabluemgeek.github.io/ride-hailing-fee-prediction/ride_hailing_dashboard.html)
 
 - A frequent, high-spending rider segment has a disproportionately high cancellation rate — a targeted retention opportunity rather than a pure "grow demand" problem.
 - Trip failure (not fee amount) is the biggest lever on revenue: a large share of requests never reach `FINISHED`.
