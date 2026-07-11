@@ -21,7 +21,8 @@ Missing values are concentrated in trips that were never accepted, started, or c
 ## Approach
 
 **1. Descriptive statistics** — finished vs. unfinished trip rates broken down by month, time of day, and city, to understand where and when demand is lost.
-
+### *Interactive dashboard*
+[![View Dashboard](https://img.shields.io/badge/View-Live%20Dashboard-blue)](https://cabluemgeek.github.io/ride-hailing-fee-prediction/ride_hailing_dashboard.html)
 **2. Exploratory data analysis**
 - *Customer segmentation* (K-Means on frequency, completion rate, cancellation rate, distance, spend) → 4 rider profiles. The key finding: the highest-spending, highest-frequency segment also has the worst completion rate — a retention risk sitting on top of the platform's best revenue.
 - *Driver-level KPIs*
@@ -68,9 +69,6 @@ ride-hailing-fee-prediction/
 - A frequent, high-spending rider segment has a disproportionately high cancellation rate — a targeted retention opportunity rather than a pure "grow demand" problem.
 - Trip failure (not fee amount) is the biggest lever on revenue: a large share of requests never reach `FINISHED`.
 - Weather condition, time of day, and same-city vs. cross-city routing all carry real signal for fee prediction once combined with distance features.
-
-## Interactive dashboard
-[![View Dashboard](https://img.shields.io/badge/View-Live%20Dashboard-blue)](https://cabluemgeek.github.io/ride-hailing-fee-prediction/ride_hailing_dashboard.html)
 
 ## Possible next steps
 
