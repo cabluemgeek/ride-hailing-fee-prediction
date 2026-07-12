@@ -130,10 +130,15 @@ function showChartView() {
   mapContainer.style.display = 'none';
 }
 
+let mapLoaded = false;
+
 function showMapView() {
   chartContainer.style.display = 'none';
   mapContainer.style.display = 'block';
-  if (!mapFrame.src) mapFrame.src = MAP_URL;
+  if (!mapLoaded) {
+    mapFrame.src = MAP_URL;
+    mapLoaded = true;
+  }
 }
 
 function setActive(key) {
