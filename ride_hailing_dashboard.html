@@ -53,6 +53,7 @@
   <button id="btn-hour">By hour</button>
   <button id="btn-total">Top cities (total)</button>
   <button id="btn-status">Top cities (status)</button>
+  <button id="btn-map">Map</button>
 </div>
 
 <div id="legend-status">
@@ -60,8 +61,12 @@
   <span><span class="swatch" style="background:#e34948;"></span>Not finished</span>
 </div>
 
-<div class="chart-wrap">
+<div class="chart-wrap" id="chart-container">
   <canvas id="mainChart" role="img" aria-label="Chart of ride-hailing trip data">Chart showing trip status, monthly trend, hourly pattern, and top cities.</canvas>
+</div>
+
+<div class="chart-wrap" id="map-container" style="display: none; height: 500px;">
+  <iframe id="mapFrame" src="" width="100%" height="100%" style="border: none; border-radius: 6px;" title="Ride-hailing pickup and flow map"></iframe>
 </div>
 
 <footer>Data source: train.csv (pickup_city, trip_status, request_date)</footer>
@@ -111,9 +116,25 @@ const tabs = {
   month: document.getElementById('btn-month'),
   hour: document.getElementById('btn-hour'),
   total: document.getElementById('btn-total'),
-  status: document.getElementById('btn-status')
+  status: document.getElementById('btn-status'),
+  map: document.getElementById('btn-map')
 };
 const legendStatus = document.getElementById('legend-status');
+const chartContainer = document.getElementById('chart-container');
+const mapContainer = document.getElementById('map-container');
+const mapFrame = document.getElementById('mapFrame');
+const MAP_URL = 'https://cabluemgeek.github.io/ride-hailing-fee-prediction/ride_hailing_map.html';
+
+function showChartView() {
+  chartContainer.style.display = 'block';
+  mapContainer.style.display = 'none';
+}
+
+function showMapView() {
+  chartContainer.style.display = 'none';
+  mapContainer.style.display = 'block';
+  if (!mapFrame.src) mapFrame.src = MAP_URL;
+}
 
 function setActive(key) {
   Object.values(tabs).forEach(b => b.classList.remove('active'));
@@ -121,7 +142,7 @@ function setActive(key) {
 }
 
 tabs.pie.addEventListener('click', () => {
-  setActive('pie'); legendStatus.style.display = 'none';
+  setActive('pie'); showChartView(); legendStatus.style.display = 'none';
   chart.destroy();
   chart = new Chart(ctx, {
     type: 'pie',
@@ -133,7 +154,7 @@ tabs.pie.addEventListener('click', () => {
 });
 
 tabs.month.addEventListener('click', () => {
-  setActive('month'); legendStatus.style.display = 'flex';
+  setActive('month'); showChartView(); legendStatus.style.display = 'flex';
   chart.destroy();
   chart = new Chart(ctx, {
     type: 'bar',
@@ -148,7 +169,7 @@ tabs.month.addEventListener('click', () => {
 });
 
 tabs.hour.addEventListener('click', () => {
-  setActive('hour'); legendStatus.style.display = 'flex';
+  setActive('hour'); showChartView(); legendStatus.style.display = 'flex';
   chart.destroy();
   chart = new Chart(ctx, {
     type: 'line',
@@ -163,7 +184,7 @@ tabs.hour.addEventListener('click', () => {
 });
 
 tabs.total.addEventListener('click', () => {
-  setActive('total'); legendStatus.style.display = 'none';
+  setActive('total'); showChartView(); legendStatus.style.display = 'none';
   chart.destroy();
   chart = new Chart(ctx, {
     type: 'bar',
@@ -175,7 +196,7 @@ tabs.total.addEventListener('click', () => {
 });
 
 tabs.status.addEventListener('click', () => {
-  setActive('status'); legendStatus.style.display = 'flex';
+  setActive('status'); showChartView(); legendStatus.style.display = 'flex';
   chart.destroy();
   chart = new Chart(ctx, {
     type: 'bar',
@@ -187,6 +208,11 @@ tabs.status.addEventListener('click', () => {
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + fmtY(c.raw) } } },
       scales: { x: { ticks: { autoSkip: false, maxRotation: 45 }, grid: { display: false } }, y: { ticks: { callback: fmtY }, grid: { color: 'rgba(120,120,120,0.15)' } } } }
   });
+});
+
+tabs.map.addEventListener('click', () => {
+  setActive('map'); legendStatus.style.display = 'none';
+  showMapView();
 });
 </script>
 
