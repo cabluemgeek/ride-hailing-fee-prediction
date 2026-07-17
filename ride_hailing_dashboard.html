@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ride-Hailing Trips Dashboard</title>
+<title>Yassir Sentiment Analysis Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   body {
@@ -39,106 +39,136 @@
   #legend-status span { display: flex; align-items: center; gap: 6px; }
   #legend-status .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
   .chart-wrap { position: relative; width: 100%; height: 440px; }
+  .wordcloud-grid {
+    display: none;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .wordcloud-grid img {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    display: block;
+  }
+  .wordcloud-caption {
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    margin-top: 6px;
+  }
+  @media (max-width: 640px) {
+    .wordcloud-grid { grid-template-columns: 1fr; }
+  }
   footer { margin-top: 24px; font-size: 12px; color: #999; }
 </style>
 </head>
 <body>
 
-<h1>Ride-hailing trips dashboard</h1>
-<p class="subtitle">Algerian ride-hailing dataset &mdash; switch between views below.</p>
+<h1>Yassir customer feedback — sentiment dashboard</h1>
+<p class="subtitle">Multilingual review analysis (French / English / Algerian Arabic) &mdash; switch between views below.</p>
 
 <div class="controls">
-  <button id="btn-pie" class="active">Status split</button>
-  <button id="btn-month">By month</button>
-  <button id="btn-hour">By hour</button>
-  <button id="btn-total">Top cities (total)</button>
-  <button id="btn-status">Top cities (status)</button>
-  <button id="btn-map">Map</button>
+  <button id="btn-sentiment" class="active">Sentiment split</button>
+  <button id="btn-ratings">By rating</button>
+  <button id="btn-perrating">Sentiment per rating</button>
+  <button id="btn-aspects">By aspect</button>
+  <button id="btn-language">By language</button>
+  <button id="btn-wordclouds">Word clouds</button>
 </div>
 
 <div id="legend-status">
-  <span><span class="swatch" style="background:#1baf7a;"></span>Finished</span>
-  <span><span class="swatch" style="background:#e34948;"></span>Not finished</span>
+  <span><span class="swatch" style="background:#6366f1;"></span>Positive</span>
+  <span><span class="swatch" style="background:#e34948;"></span>Negative</span>
 </div>
 
 <div class="chart-wrap" id="chart-container">
-  <canvas id="mainChart" role="img" aria-label="Chart of ride-hailing trip data">Chart showing trip status, monthly trend, hourly pattern, and top cities.</canvas>
+  <canvas id="mainChart" role="img" aria-label="Chart of Yassir sentiment analysis data">Chart showing sentiment distribution, ratings, aspects, and language mix.</canvas>
 </div>
 
-<div class="chart-wrap" id="map-container" style="display: none; height: 500px;">
-  <iframe id="mapFrame" src="" width="100%" height="100%" style="border: none; border-radius: 6px;" title="Ride-hailing pickup and flow map"></iframe>
+<div class="wordcloud-grid" id="wordcloud-container">
+  <div>
+    <img src="wordcloud_positive_latin.png" alt="Positive reviews word cloud, French/English">
+    <div class="wordcloud-caption">Positive reviews (French/English)</div>
+  </div>
+  <div>
+    <img src="wordcloud_negative_latin.png" alt="Negative reviews word cloud, French/English">
+    <div class="wordcloud-caption">Negative reviews (French/English)</div>
+  </div>
+  <div>
+    <img src="wordcloud_positive_arabic.png" alt="Positive reviews word cloud, Arabic script">
+    <div class="wordcloud-caption">Positive reviews (Arabic script)</div>
+  </div>
+  <div>
+    <img src="wordcloud_negative_arabic.png" alt="Negative reviews word cloud, Arabic script">
+    <div class="wordcloud-caption">Negative reviews (Arabic script)</div>
+  </div>
 </div>
 
-<footer>Data source: train.csv (pickup_city, trip_status, request_date)</footer>
+<footer>Data source: data_reviews.csv (Sentiment, Rating, Language, Aspect_Focus)</footer>
 
 <script>
-const pieData = { labels: ["Not finished","Finished"], values: [389792, 333614] };
+// ============================================================
+// DATA -- values read directly from the notebook's chart outputs
+// ============================================================
+const sentimentData = { labels: ["positive", "negative"], values: [723, 413] };
 
-const monthData = {
-  labels: ["Jan","Feb","Mar","Apr","May"],
-  finished: [48049,59270,73789,66448,85491],
-  notFinished: [61080,73538,86413,65891,102305]
+const ratingsData = {
+  labels: ["1", "2", "3", "4", "5"],
+  values: [118, 283, 139, 93, 503]
 };
 
-const hourData = {
-  labels: Array.from({length:24}, (_,i)=>i+':00'),
-  finished: [239,139,114,321,922,3737,13347,22969,25037,24966,24919,25982,27208,27628,27043,26324,24282,19987,12962,9987,7670,4182,2485,597],
-  notFinished: [1889,1496,1182,1226,1594,4288,16085,23252,20811,20933,22614,27986,31088,31640,34816,40130,32203,22263,16042,11966,10173,6961,5614,2975]
+// Approximate split read off the stacked chart (rating 3 mixes both sentiments; totals match ratingsData above)
+const perRatingData = {
+  labels: ["1", "2", "3", "4", "5"],
+  positive: [0, 0, 125, 93, 503],
+  negative: [118, 283, 14, 0, 0]
 };
 
-const totalCityData = {
-  labels: ["Alger","Oran","Constantine","Blida","Annaba","Boumerd\u00e8s","S\u00e9tif","Tipaza","Batna","B\u00e9ja\u00efa"],
-  counts: [526632,78928,58333,12514,8507,6522,6490,5954,5793,4521]
+const aspectsData = {
+  labels: ["Food Quality", "Delivery Speed", "App Usability", "Pricing", "Packaging", "Order Accuracy", "Customer Service", "Burger Quality", "Food Temperature"],
+  values: [339, 312, 181, 87, 78, 72, 60, 6, 1]
 };
 
-const statusCities = ["Alger","Annaba","Batna","Blida","Boumerd\u00e8s","B\u00e9ja\u00efa","Constantine","Oran","S\u00e9tif","Tipaza"];
-const cityFinished = [246066,3338,2229,4521,2242,1655,28185,38778,2110,1962];
-const cityNotFinished = [280566,5169,3564,7993,4280,2866,30148,40150,4380,3992];
+const languageData = { labels: ["French", "English", "Arabic"], values: [34.5, 33.2, 32.3] };
 
 const ctx = document.getElementById('mainChart');
 function fmtY(v) { return v.toLocaleString(); }
 
 let chart = new Chart(ctx, {
-  type: 'pie',
-  data: { labels: pieData.labels, datasets: [{ data: pieData.values, backgroundColor: ['#e34948','#1baf7a'] }] },
+  type: 'bar',
+  data: { labels: sentimentData.labels, datasets: [{ data: sentimentData.values, backgroundColor: ['#6366f1', '#e34948'], borderRadius: 4 }] },
   options: {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 12 } } },
-      tooltip: { callbacks: { label: (c) => c.label + ': ' + c.formattedValue + ' trips' } }
-    }
+      legend: { display: false },
+      tooltip: { callbacks: { label: (c) => fmtY(c.raw) + ' reviews' } }
+    },
+    scales: { x: { grid: { display: false } }, y: { ticks: { callback: fmtY }, grid: { color: 'rgba(120,120,120,0.15)' } } }
   }
 });
 
 const tabs = {
-  pie: document.getElementById('btn-pie'),
-  month: document.getElementById('btn-month'),
-  hour: document.getElementById('btn-hour'),
-  total: document.getElementById('btn-total'),
-  status: document.getElementById('btn-status'),
-  map: document.getElementById('btn-map')
+  sentiment: document.getElementById('btn-sentiment'),
+  ratings: document.getElementById('btn-ratings'),
+  perrating: document.getElementById('btn-perrating'),
+  aspects: document.getElementById('btn-aspects'),
+  language: document.getElementById('btn-language'),
+  wordclouds: document.getElementById('btn-wordclouds')
 };
 const legendStatus = document.getElementById('legend-status');
 const chartContainer = document.getElementById('chart-container');
-const mapContainer = document.getElementById('map-container');
-const mapFrame = document.getElementById('mapFrame');
-const MAP_URL = 'https://cabluemgeek.github.io/ride-hailing-fee-prediction/ride_hailing_map.html';
+const wordcloudContainer = document.getElementById('wordcloud-container');
 
 function showChartView() {
   chartContainer.style.display = 'block';
-  mapContainer.style.display = 'none';
+  wordcloudContainer.style.display = 'none';
 }
 
-let mapLoaded = false;
-
-function showMapView() {
+function showWordcloudView() {
   chartContainer.style.display = 'none';
-  mapContainer.style.display = 'block';
-  if (!mapLoaded) {
-    mapFrame.src = MAP_URL;
-    mapLoaded = true;
-  }
+  wordcloudContainer.style.display = 'grid';
+  if (chart) { chart.destroy(); chart = null; }
 }
 
 function setActive(key) {
@@ -146,26 +176,38 @@ function setActive(key) {
   tabs[key].classList.add('active');
 }
 
-tabs.pie.addEventListener('click', () => {
-  setActive('pie'); showChartView(); legendStatus.style.display = 'none';
-  chart.destroy();
-  chart = new Chart(ctx, {
-    type: 'pie',
-    data: { labels: pieData.labels, datasets: [{ data: pieData.values, backgroundColor: ['#e34948','#1baf7a'] }] },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 12 } } },
-      tooltip: { callbacks: { label: (c) => c.label + ': ' + c.formattedValue + ' trips' } } } }
-  });
-});
-
-tabs.month.addEventListener('click', () => {
-  setActive('month'); showChartView(); legendStatus.style.display = 'flex';
+tabs.sentiment.addEventListener('click', () => {
+  setActive('sentiment'); showChartView(); legendStatus.style.display = 'none';
   chart.destroy();
   chart = new Chart(ctx, {
     type: 'bar',
-    data: { labels: monthData.labels, datasets: [
-      { label: 'Finished', data: monthData.finished, backgroundColor: '#1baf7a', borderRadius: 4 },
-      { label: 'Not finished', data: monthData.notFinished, backgroundColor: '#e34948', borderRadius: 4 }
+    data: { labels: sentimentData.labels, datasets: [{ data: sentimentData.values, backgroundColor: ['#6366f1', '#e34948'], borderRadius: 4 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => fmtY(c.raw) + ' reviews' } } },
+      scales: { x: { grid: { display: false } }, y: { ticks: { callback: fmtY }, grid: { color: 'rgba(120,120,120,0.15)' } } } }
+  });
+});
+
+tabs.ratings.addEventListener('click', () => {
+  setActive('ratings'); showChartView(); legendStatus.style.display = 'none';
+  chart.destroy();
+  chart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: ratingsData.labels, datasets: [{ label: 'Reviews', data: ratingsData.values, backgroundColor: '#2a78d6', borderRadius: 4 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => fmtY(c.raw) + ' reviews' } } },
+      scales: { x: { grid: { display: false } }, y: { ticks: { callback: fmtY }, grid: { color: 'rgba(120,120,120,0.15)' } } } }
+  });
+});
+
+tabs.perrating.addEventListener('click', () => {
+  setActive('perrating'); showChartView(); legendStatus.style.display = 'flex';
+  chart.destroy();
+  chart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: perRatingData.labels, datasets: [
+      { label: 'Positive', data: perRatingData.positive, backgroundColor: '#6366f1', borderRadius: 4 },
+      { label: 'Negative', data: perRatingData.negative, backgroundColor: '#e34948', borderRadius: 4 }
     ]},
     options: { responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + fmtY(c.raw) } } },
@@ -173,51 +215,33 @@ tabs.month.addEventListener('click', () => {
   });
 });
 
-tabs.hour.addEventListener('click', () => {
-  setActive('hour'); showChartView(); legendStatus.style.display = 'flex';
-  chart.destroy();
-  chart = new Chart(ctx, {
-    type: 'line',
-    data: { labels: hourData.labels, datasets: [
-      { label: 'Finished', data: hourData.finished, borderColor: '#1baf7a', backgroundColor: '#1baf7a', tension: 0.3, pointRadius: 2 },
-      { label: 'Not finished', data: hourData.notFinished, borderColor: '#e34948', backgroundColor: '#e34948', tension: 0.3, pointRadius: 2 }
-    ]},
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + fmtY(c.raw) } } },
-      scales: { x: { ticks: { autoSkip: true, maxTicksLimit: 12 }, grid: { display: false } }, y: { ticks: { callback: fmtY }, grid: { color: 'rgba(120,120,120,0.15)' } } } }
-  });
-});
-
-tabs.total.addEventListener('click', () => {
-  setActive('total'); showChartView(); legendStatus.style.display = 'none';
+tabs.aspects.addEventListener('click', () => {
+  setActive('aspects'); showChartView(); legendStatus.style.display = 'none';
   chart.destroy();
   chart = new Chart(ctx, {
     type: 'bar',
-    data: { labels: totalCityData.labels, datasets: [{ label: 'Requested trips', data: totalCityData.counts, backgroundColor: '#2a78d6', borderRadius: 4 }] },
+    data: { labels: aspectsData.labels, datasets: [{ label: 'Reviews', data: aspectsData.values, backgroundColor: '#2a78d6', borderRadius: 4 }] },
     options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => fmtY(c.raw) + ' trips' } } },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => fmtY(c.raw) + ' reviews' } } },
       scales: { x: { ticks: { autoSkip: false, maxRotation: 45 }, grid: { display: false } }, y: { ticks: { callback: fmtY }, grid: { color: 'rgba(120,120,120,0.15)' } } } }
   });
 });
 
-tabs.status.addEventListener('click', () => {
-  setActive('status'); showChartView(); legendStatus.style.display = 'flex';
+tabs.language.addEventListener('click', () => {
+  setActive('language'); showChartView(); legendStatus.style.display = 'none';
   chart.destroy();
   chart = new Chart(ctx, {
-    type: 'bar',
-    data: { labels: statusCities, datasets: [
-      { label: 'Finished', data: cityFinished, backgroundColor: '#1baf7a', borderRadius: 4 },
-      { label: 'Not finished', data: cityNotFinished, backgroundColor: '#e34948', borderRadius: 4 }
-    ]},
+    type: 'pie',
+    data: { labels: languageData.labels, datasets: [{ data: languageData.values, backgroundColor: ['#6366f1', '#e34948', '#1baf7a'] }] },
     options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + fmtY(c.raw) } } },
-      scales: { x: { ticks: { autoSkip: false, maxRotation: 45 }, grid: { display: false } }, y: { ticks: { callback: fmtY }, grid: { color: 'rgba(120,120,120,0.15)' } } } }
+      plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 12 } } },
+      tooltip: { callbacks: { label: (c) => c.label + ': ' + c.formattedValue + '%' } } } }
   });
 });
 
-tabs.map.addEventListener('click', () => {
-  setActive('map'); legendStatus.style.display = 'none';
-  showMapView();
+tabs.wordclouds.addEventListener('click', () => {
+  setActive('wordclouds'); legendStatus.style.display = 'none';
+  showWordcloudView();
 });
 </script>
 
